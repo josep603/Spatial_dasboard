@@ -1,0 +1,91 @@
+---
+title: "Spatial Visualization"
+author: "Bibin Joseph"
+output: 
+  flexdashboard::flex_dashboard:
+    embed_resources: true
+---
+
+```{r setup, include = FALSE, echo = FALSE}
+library(tidyverse)
+library(lubridate)
+library(gt)
+library(paletteer)
+library(plotly)
+library(flexdashboard)
+library(ggridges)
+library(gtExtras)
+library(sf)
+library(ggmap)
+library(tidycensus)
+library(leaflet)
+library(osmdata)
+library(tigris)
+library(ggsflabel)
+library(ggthemes)
+
+
+#Working directory for .RMD
+knitr::opts_knit$set(echo = TRUE,
+                     root.dir = rprojroot::find_rstudio_root_file())
+
+#Controlling figure output in markdown
+knitr::opts_chunk$set(
+#  fig.height =   
+  fig.width = 6,
+#  fig.asp = .5,
+  out.width = "90%",
+#  out.height = 
+  fig.align  = "center",
+  cache = FALSE,
+  eval  = TRUE,
+  echo  = FALSE,
+  warning = FALSE
+)
+
+#My Colours (from viridis)
+my_purple <- "#440154FF"
+my_yellow <- "#FDE725FF"
+
+#Set Theme for ggplot2
+theme_set(theme_bw() + theme(plot.title = element_text(hjust = 0.5), legend.position = "bottom"))
+
+#Set Scientific notation output and decimal places for knitr
+options(scipen = 999)
+options(digits = 4)
+options(dplyr.summarise.inform = FALSE)
+```
+
+```{r}
+## Load the API key
+api_key <- Sys.getenv("MAPS_API_KEY")
+
+```
+
+## Question 1.3
+
+**Create  `ggplotly` of Hennepin County using `sf`, `ggmap`, `tidycensus`, `ggplot`, and `plotly`; which describes a Census Blockgroup level 2020 American Community Survey (ACS) esimate/feature of your choosing**
+
+```{r,echo=FALSE,message=FALSE}
+# Get Census Blockgroup level data for median age in Hennepin County
+
+  hennepin_age <- get_acs(
+  geography = "block group",
+  variables = "B01002_001E",
+  state = "MN",
+  county = "Hennepin",
+  geometry = TRUE,
+  year = 2020,
+  cb=FALSE,
+  progress = FALSE
+) 
+
+# Plot the data using ggplot2
+hennepin_age_plot <- ggplot() +
+  geom_sf(data = hennepin_age, aes(fill = estimate)) +
+  scale_fill_viridis_c(name = "Median Age") +
+  ggtitle("Median Age Distribution in Hennepin County") +
+  theme_void()
+# Convert ggplot2 object to plotly object
+ggplotly(hennepin_age_plot, tooltip = "text")
+```
